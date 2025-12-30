@@ -24,16 +24,27 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = parseInt(searchParams.get('offset') || '0');
 
+    console.log('Fetching markets with:', { filters, sort, limit, offset });
+
     const markets = await getMarkets(filters, sort, limit, offset);
+
+    console.log('Markets fetched successfully:', markets.length);
 
     return NextResponse.json({
       markets,
       count: markets.length,
     });
-  } catch (error) {
-    console.error('Error fetching markets:', error);
+  } catch (error: any) {
+    console.error('Error fetching markets:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
     return NextResponse.json(
-      { error: 'Failed to fetch markets' },
+      {
+        error: 'Failed to fetch markets',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }
