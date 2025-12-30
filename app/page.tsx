@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { BlindPeriodIndicator } from "@/components/ui/BlindPeriodIndicator";
-import { ContrarianBadge } from "@/components/ui/ContrarianBadge";
-import { Badge } from "@/components/ui/Badge";
 import { Loading } from "@/components/ui/Loading";
 import { MarketCard } from "@/components/features/markets/MarketCard";
 import type { MarketWithStats } from "@/lib/types/market";
@@ -36,9 +33,6 @@ export default function Home() {
       setLoadingMarkets(false);
     }
   };
-
-  // Sample date for demo (48 hours from now)
-  const blindPeriodEnds = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
   if (isLoading) {
     return (
@@ -142,59 +136,6 @@ export default function Home() {
           </p>
         </Card>
       </div>
-
-      {/* Component Demo Section */}
-      <Card variant="bordered" padding="lg" className="mb-12">
-        <h2 className="mb-6 text-2xl font-semibold text-text-primary">Phase 1 Components Demo</h2>
-
-        <div className="space-y-6">
-          {/* Badges */}
-          <div>
-            <h3 className="mb-3 text-lg font-medium text-text-primary">Status Indicators</h3>
-            <div className="flex flex-wrap gap-3">
-              <BlindPeriodIndicator endsAt={blindPeriodEnds} />
-              <ContrarianBadge showBonus />
-              <Badge variant="success">Resolved</Badge>
-              <Badge variant="danger">Locked</Badge>
-              <Badge variant="warning">Closing Soon</Badge>
-              <Badge variant="info">New Market</Badge>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div>
-            <h3 className="mb-3 text-lg font-medium text-text-primary">Buttons</h3>
-            <div className="flex flex-wrap gap-3">
-              <Button variant="primary">Place Bet</Button>
-              <Button variant="secondary">View Details</Button>
-              <Button variant="outline">Cancel</Button>
-              <Button variant="ghost">More Info</Button>
-              <Button variant="danger">Delete</Button>
-            </div>
-          </div>
-
-          {/* User Info */}
-          {user && (
-            <div>
-              <h3 className="mb-3 text-lg font-medium text-text-primary">
-                Welcome back, {user.displayName}!
-              </h3>
-              <div className="flex gap-4">
-                <div className="rounded-lg bg-background-elevated p-4">
-                  <p className="text-sm text-text-secondary">Balance</p>
-                  <p className="text-xl font-mono font-semibold text-accent-primary">
-                    T${parseFloat(user.balance).toFixed(2)}
-                  </p>
-                </div>
-                <div className="rounded-lg bg-background-elevated p-4">
-                  <p className="text-sm text-text-secondary">Username</p>
-                  <p className="text-xl font-semibold text-text-primary">@{user.username}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
 
       {/* Markets Available */}
       {closingSoonMarkets.length > 0 && (
