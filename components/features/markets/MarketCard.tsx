@@ -61,9 +61,9 @@ export function MarketCard({ market }: MarketCardProps) {
 
   // Get leading outcome (highest percentage)
   const getLeadingOutcome = () => {
-    if (isBlindPeriod || market.outcomes.length === 0) return null;
+    if (isBlindPeriod || !market.outcomes || market.outcomes.length === 0) return null;
 
-    const sorted = [...market.outcomes].sort((a, b) => b.percentage - a.percentage);
+    const sorted = [...market.outcomes].sort((a, b) => (b.percentage ?? 0) - (a.percentage ?? 0));
     return sorted[0];
   };
 
@@ -101,10 +101,10 @@ export function MarketCard({ market }: MarketCardProps) {
           {/* Market Info */}
           <div className="flex items-center gap-3 mb-3">
             <span className="text-sm text-text-secondary">
-              Pool: <span className="text-text-primary font-medium">T${market.total_pool.toFixed(2)}</span>
+              Pool: <span className="text-text-primary font-medium">T${(market.total_pool ?? 0).toFixed(2)}</span>
             </span>
             <span className="text-sm text-text-secondary">
-              {market.total_bets} {market.total_bets === 1 ? 'bet' : 'bets'}
+              {market.total_bets ?? 0} {(market.total_bets ?? 0) === 1 ? 'bet' : 'bets'}
             </span>
           </div>
 
@@ -116,13 +116,13 @@ export function MarketCard({ market }: MarketCardProps) {
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-text-secondary">Leading</span>
                 <span className="text-text-primary font-medium">
-                  {leadingOutcome.percentage.toFixed(1)}%
+                  {(leadingOutcome.percentage ?? 0).toFixed(1)}%
                 </span>
               </div>
               <div className="w-full bg-background-secondary rounded-full h-2">
                 <div
                   className="bg-accent-primary rounded-full h-2 transition-all"
-                  style={{ width: `${leadingOutcome.percentage}%` }}
+                  style={{ width: `${leadingOutcome.percentage ?? 0}%` }}
                 />
               </div>
               <p className="text-xs text-text-secondary mt-1">{leadingOutcome.label}</p>
