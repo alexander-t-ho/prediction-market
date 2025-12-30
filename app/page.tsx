@@ -12,23 +12,35 @@ import type { MarketWithStats } from "@/lib/types/market";
 export default function Home() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [closingSoonMarkets, setClosingSoonMarkets] = useState<MarketWithStats[]>([]);
+  const [featuredMarkets, setFeaturedMarkets] = useState<MarketWithStats[]>([]);
   const [loadingMarkets, setLoadingMarkets] = useState(false);
 
   useEffect(() => {
-    fetchClosingSoonMarkets();
+    fetchFeaturedMarkets();
   }, [user]);
 
-  const fetchClosingSoonMarkets = async () => {
+  const fetchFeaturedMarkets = async () => {
     try {
       setLoadingMarkets(true);
-      const response = await fetch('/api/markets/closing-soon');
+      // Try closing soon first
+      let response = await fetch('/api/markets/closing-soon?limit=6');
       if (response.ok) {
         const data = await response.json();
-        setClosingSoonMarkets(data.markets || []);
+        if (data.markets && data.markets.length > 0) {
+          setFeaturedMarkets(data.markets);
+          setLoadingMarkets(false);
+          return;
+        }
+      }
+
+      // Fallback to newest markets if no closing soon
+      response = await fetch(`/api/markets?sort=newest&limit=6${user ? `&userId=${user.id}` : ''}`);
+      if (response.ok) {
+        const data = await response.json();
+        setFeaturedMarkets(data.markets || []);
       }
     } catch (error) {
-      console.error('Failed to fetch closing soon markets:', error);
+      console.error('Failed to fetch featured markets:', error);
     } finally {
       setLoadingMarkets(false);
     }
@@ -137,27 +149,29 @@ export default function Home() {
         </Card>
       </div>
 
-      {/* Markets Available */}
-      {closingSoonMarkets.length > 0 && (
-        <div className="mb-12">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-text-primary">Closing Soon</h2>
-            <Button variant="ghost" onClick={() => router.push('/markets')}>
-              View All →
-            </Button>
-          </div>
-
-          {loadingMarkets ? (
-            <Loading text="Loading markets..." />
-          ) : (
-            <div className="space-y-4">
-              {closingSoonMarkets.slice(0, 3).map((market) => (
-                <MarketCard key={market.id} market={market} />
-              ))}
-            </div>
-          )}
+      {/* Featured Markets */}
+      <div className="mb-12">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-text-primary">Featured Markets</h2>
+          <Button variant="ghost" onClick={() => router.push('/markets')}>
+            View All →
+          </Button>
         </div>
-      )}
+
+        {loadingMarkets ? (
+          <Loading text="Loading markets..." />
+        ) : featuredMarkets.length > 0 ? (
+          <div className="space-y-4">
+            {featuredMarkets.slice(0, 3).map((market) => (
+              <MarketCard key={market.id} market={market} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-text-secondary">No markets available yet. Check back soon!</p>
+          </div>
+        )}
+      </div>
 
       {/* CTA Card */}
       <Card variant="elevated" padding="lg" className="text-center">
