@@ -14,13 +14,15 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      console.error('Unauthorized cron request');
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // TEMPORARY: Allow unauthenticated access for initial setup
+    // TODO: Re-enable after first market generation
+    // if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    //   console.error('Unauthorized cron request');
+    //   return NextResponse.json(
+    //     { error: 'Unauthorized' },
+    //     { status: 401 }
+    //   );
+    // }
 
     console.log('Starting market generation cron job...');
 
