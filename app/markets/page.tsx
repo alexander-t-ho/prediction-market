@@ -221,7 +221,11 @@ export default function MarketsPage() {
       {/* Load More */}
       {!loading && markets.length > 0 && hasMore && (
         <div className="mt-8 text-center">
-          <Button variant="secondary" onClick={loadMore}>
+          <Button
+            variant="secondary"
+            onClick={() => loadMore()}
+            disabled={loading}
+          >
             Load More
           </Button>
         </div>
