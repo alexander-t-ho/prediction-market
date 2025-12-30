@@ -88,7 +88,7 @@ export function ResolutionCard({
         }`}>
           <div className="flex items-center justify-between mb-3">
             <p className="text-lg font-semibold text-white">Your Prediction</p>
-            <Badge variant={userBet.won ? 'success' : 'error'}>
+            <Badge variant={userBet.won ? 'success' : 'danger'}>
               {userBet.won ? 'WON' : 'LOST'}
             </Badge>
           </div>
@@ -145,7 +145,7 @@ export function ResolutionCard({
               </Badge>
             )}
             {userBet.wasContrarian && (
-              <Badge variant="secondary" size="sm">
+              <Badge variant="info" size="sm">
                 🌟 Contrarian
               </Badge>
             )}

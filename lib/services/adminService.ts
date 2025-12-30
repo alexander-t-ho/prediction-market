@@ -5,10 +5,10 @@ import {
   bets,
   comments,
   marketOutcomes,
-  resolutionRecords,
+  resolutions,
 } from "../db/schema";
 import { eq, desc, sql, and, gte, lte, count } from "drizzle-orm";
-import { resolveMarket, cancelMarket } from "./resolutionService";
+import { resolveMarket, cancelResolution } from "./resolutionService";
 
 // ============================================
 // TYPES & INTERFACES
@@ -149,30 +149,43 @@ export async function getPlatformStatistics(): Promise<PlatformStatistics> {
 // ============================================
 
 export async function getRecentResolutions(limit: number = 10): Promise<RecentResolution[]> {
-  const resolutions = await db
+  const resolutionsData = await db
     .select({
-      id: resolutionRecords.id,
-      marketId: resolutionRecords.marketId,
+      id: resolutions.id,
+      marketId: resolutions.marketId,
       marketTitle: markets.title,
-      resolvedAt: resolutionRecords.createdAt,
-      totalPayout: resolutionRecords.totalPayout,
-      winnersCount: resolutionRecords.winnersCount,
+      resolvedAt: resolutions.createdAt,
       actualValue: markets.actualValue,
     })
-    .from(resolutionRecords)
-    .innerJoin(markets, eq(resolutionRecords.marketId, markets.id))
-    .orderBy(desc(resolutionRecords.createdAt))
+    .from(resolutions)
+    .innerJoin(markets, eq(resolutions.marketId, markets.id))
+    .orderBy(desc(resolutions.createdAt))
     .limit(limit);
 
-  return resolutions.map((r) => ({
-    id: r.id,
-    marketId: r.marketId,
-    marketTitle: r.marketTitle,
-    resolvedAt: r.resolvedAt,
-    totalPayout: Number(r.totalPayout),
-    winnersCount: r.winnersCount,
-    actualValue: r.actualValue ? Number(r.actualValue) : null,
-  }));
+  // Calculate totalPayout and winnersCount for each resolution
+  const results = await Promise.all(
+    resolutionsData.map(async (r) => {
+      const payoutStats = await db
+        .select({
+          totalPayout: sql<number>`COALESCE(SUM(${bets.actualPayout}), 0)`,
+          winnersCount: sql<number>`COUNT(CASE WHEN ${bets.actualPayout} > 0 THEN 1 END)`,
+        })
+        .from(bets)
+        .where(eq(bets.marketId, r.marketId));
+
+      return {
+        id: r.id,
+        marketId: r.marketId,
+        marketTitle: r.marketTitle,
+        resolvedAt: r.resolvedAt,
+        totalPayout: Number(payoutStats[0]?.totalPayout || 0),
+        winnersCount: Number(payoutStats[0]?.winnersCount || 0),
+        actualValue: r.actualValue ? Number(r.actualValue) : null,
+      };
+    })
+  );
+
+  return results;
 }
 
 // ============================================
@@ -374,11 +387,11 @@ export async function manuallyResolveMarket(
     const result = await resolveMarket(
       data.marketId,
       winningOutcomeId,
-      data.actualValue
+      data.actualValue ?? 0
     );
 
     if (!result.success) {
-      return { success: false, error: result.error };
+      return { success: false, error: result.errors?.[0] || "Resolution failed" };
     }
 
     // Log the manual resolution
@@ -397,19 +410,18 @@ export async function cancelMarketWithRefunds(
   marketId: string,
   adminId: string,
   reason: string
-): Promise<{ success: boolean; error?: string; refundCount?: number }> {
+): Promise<{ success: boolean; error?: string }> {
   try {
-    const result = await cancelMarket(marketId, reason);
+    const result = await cancelResolution(marketId);
 
     if (!result.success) {
-      return { success: false, error: result.error };
+      return { success: false, error: result.errors?.[0] || "Resolution failed" };
     }
 
     console.log(`Market ${marketId} cancelled by admin ${adminId}. Reason: ${reason}`);
 
     return {
       success: true,
-      refundCount: result.refundedBets || 0,
     };
   } catch (error) {
     console.error("Error cancelling market:", error);

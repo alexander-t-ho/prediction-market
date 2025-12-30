@@ -5,16 +5,8 @@
       "schedule": "0 12 * * *"
     },
     {
-      "path": "/api/cron/generate-markets",
-      "schedule": "0 0 * * *"
-    },
-    {
       "path": "/api/cron/transition-blind-periods",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/leaderboards/snapshots/generate",
-      "schedule": "0 0 * * 0"
+      "schedule": "0 0 * * *"
     }
   ],
   "headers": [

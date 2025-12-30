@@ -138,7 +138,6 @@ export async function POST(
       return NextResponse.json({
         success: true,
         marketId,
-        refundCount: result.refundCount,
       });
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });

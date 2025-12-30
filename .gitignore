@@ -44,3 +44,5 @@ next-env.d.ts
 # documentation - exclude all .md files except root README.md
 *.md
 !/README.md
+
+.vercel

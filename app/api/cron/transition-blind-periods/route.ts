@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/db'
-import { markets } from '@/db/schema'
+import { db } from '@/lib/db'
+import { markets } from '@/lib/db/schema'
 import { eq, and, lte } from 'drizzle-orm'
 import { captureError, captureMessage } from '@/lib/monitoring'
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       .where(
         and(
           eq(markets.status, 'open'),
-          lte(markets.blindPeriodEnds, now)
+          lte(markets.blindPeriodEndsAt, now)
         )
       )
 

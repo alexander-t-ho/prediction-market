@@ -48,22 +48,21 @@ export async function monitorApiCall<T>(
   operation: string,
   fn: () => Promise<T>
 ): Promise<T> {
-  const transaction = Sentry.startTransaction({
-    name: operation,
-    op: 'api.call',
-  })
-
-  try {
-    const result = await fn()
-    transaction.setStatus('ok')
-    return result
-  } catch (error) {
-    transaction.setStatus('internal_error')
-    captureError(error as Error, { operation })
-    throw error
-  } finally {
-    transaction.finish()
-  }
+  // Using Sentry's modern span API instead of deprecated startTransaction
+  return await Sentry.startSpan(
+    {
+      name: operation,
+      op: 'api.call',
+    },
+    async () => {
+      try {
+        return await fn()
+      } catch (error) {
+        captureError(error as Error, { operation })
+        throw error
+      }
+    }
+  )
 }
 
 export class ErrorBoundary {

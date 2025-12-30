@@ -126,10 +126,13 @@ export const followService = {
       orderBy: [desc(follows.createdAt)],
     });
 
-    return following.map((f) => ({
-      ...f.following,
-      followedAt: f.createdAt,
-    }));
+    return following.map((f) => {
+      const user = Array.isArray(f.following) ? f.following[0] : f.following;
+      return {
+        ...user,
+        followedAt: f.createdAt,
+      };
+    });
   },
 
   /**

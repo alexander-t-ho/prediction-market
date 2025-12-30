@@ -40,16 +40,20 @@ export const activityService = {
     });
 
     userBets.forEach((bet) => {
+      // Type assertion: Drizzle's 'with' always returns an object for one() relations
+      const market = Array.isArray(bet.market) ? bet.market[0] : bet.market;
+      const outcome = Array.isArray(bet.outcome) ? bet.outcome[0] : bet.outcome;
+
       activities.push({
         id: bet.id,
         type: "bet",
         timestamp: bet.createdAt,
         data: {
           marketId: bet.marketId,
-          marketTitle: bet.market.title,
-          movieTitle: bet.market.movieTitle,
-          moviePosterPath: bet.market.moviePosterPath,
-          outcome: bet.outcome.label,
+          marketTitle: market.title,
+          movieTitle: market.movieTitle,
+          moviePosterPath: market.moviePosterPath,
+          outcome: outcome.label,
           stake: bet.stake,
           placedDuringBlindPeriod: bet.placedDuringBlindPeriod,
           isContrarian: bet.isContrarian,
@@ -83,6 +87,9 @@ export const activityService = {
     });
 
     challengesSent.forEach((challenge) => {
+      const market = Array.isArray(challenge.market) ? challenge.market[0] : challenge.market;
+      const challenged = Array.isArray(challenge.challenged) ? challenge.challenged[0] : challenge.challenged;
+
       activities.push({
         id: challenge.id,
         type: "challenge_sent",
@@ -90,8 +97,8 @@ export const activityService = {
         data: {
           challengeId: challenge.id,
           marketId: challenge.marketId,
-          marketTitle: challenge.market.title,
-          opponent: challenge.challenged,
+          marketTitle: market.title,
+          opponent: challenged,
           status: challenge.status,
           stake: challenge.stake,
         },
@@ -115,13 +122,15 @@ export const activityService = {
     });
 
     userComments.forEach((comment) => {
+      const market = Array.isArray(comment.market) ? comment.market[0] : comment.market;
+
       activities.push({
         id: comment.id,
         type: "comment",
         timestamp: comment.createdAt,
         data: {
           marketId: comment.marketId,
-          marketTitle: comment.market.title,
+          marketTitle: market.title,
           content: comment.content,
           hasSpoiler: comment.hasSpoiler,
         },
@@ -146,12 +155,14 @@ export const activityService = {
     });
 
     userFollows.forEach((follow) => {
+      const following = Array.isArray(follow.following) ? follow.following[0] : follow.following;
+
       activities.push({
         id: follow.id,
         type: "follow",
         timestamp: follow.createdAt,
         data: {
-          user: follow.following,
+          user: following,
         },
       });
     });
@@ -241,16 +252,20 @@ export const activityService = {
     });
 
     followedBets.forEach((bet) => {
+      const user = Array.isArray(bet.user) ? bet.user[0] : bet.user;
+      const market = Array.isArray(bet.market) ? bet.market[0] : bet.market;
+      const outcome = Array.isArray(bet.outcome) ? bet.outcome[0] : bet.outcome;
+
       activities.push({
         id: bet.id,
         type: "bet",
         timestamp: bet.createdAt,
         data: {
-          user: bet.user,
+          user,
           marketId: bet.marketId,
-          marketTitle: bet.market.title,
-          movieTitle: bet.market.movieTitle,
-          outcome: bet.outcome.label,
+          marketTitle: market.title,
+          movieTitle: market.movieTitle,
+          outcome: outcome.label,
           stake: bet.stake,
         },
       });
@@ -281,14 +296,17 @@ export const activityService = {
     });
 
     followedComments.forEach((comment) => {
+      const user = Array.isArray(comment.user) ? comment.user[0] : comment.user;
+      const market = Array.isArray(comment.market) ? comment.market[0] : comment.market;
+
       activities.push({
         id: comment.id,
         type: "comment",
         timestamp: comment.createdAt,
         data: {
-          user: comment.user,
+          user,
           marketId: comment.marketId,
-          marketTitle: comment.market.title,
+          marketTitle: market.title,
           content: comment.content,
         },
       });

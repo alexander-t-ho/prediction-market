@@ -13,6 +13,8 @@ export default function MarketsPage() {
   const [markets, setMarkets] = useState<MarketWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -21,19 +23,27 @@ export default function MarketsPage() {
   const [sortOption, setSortOption] = useState<MarketSortOption>('newest');
 
   useEffect(() => {
-    fetchMarkets();
+    // Reset when filters change
+    setMarkets([]);
+    setOffset(0);
+    setHasMore(true);
+    fetchMarkets(true);
   }, [statusFilter, categoryFilter, searchQuery, sortOption, user]);
 
-  const fetchMarkets = async () => {
+  const fetchMarkets = async (reset: boolean = false) => {
     try {
       setLoading(true);
       setError(''); // Clear previous errors
+
+      const currentOffset = reset ? 0 : offset;
       const params = new URLSearchParams();
 
       if (statusFilter !== 'all') params.append('status', statusFilter);
       if (categoryFilter !== 'all') params.append('category', categoryFilter);
       if (searchQuery) params.append('search', searchQuery);
       params.append('sort', sortOption);
+      params.append('limit', '20');
+      params.append('offset', currentOffset.toString());
 
       const response = await fetch(`/api/markets?${params.toString()}`);
 
@@ -99,11 +109,27 @@ export default function MarketsPage() {
       // Filter out any null values from the results
       const validMarkets = marketsWithStats.filter((market) => market !== null);
       console.log('Valid markets after fetching stats:', validMarkets.length);
-      setMarkets(validMarkets);
+
+      // Update markets (append if loading more, replace if reset)
+      if (reset) {
+        setMarkets(validMarkets);
+      } else {
+        setMarkets((prev) => [...prev, ...validMarkets]);
+      }
+
+      // Update pagination state
+      setHasMore(validMarkets.length === 20); // If we got less than 20, no more to load
+      setOffset(currentOffset + validMarkets.length);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      fetchMarkets(false);
     }
   };
 
@@ -192,12 +218,19 @@ export default function MarketsPage() {
         </div>
       )}
 
-      {/* Load More (placeholder for pagination) */}
-      {!loading && markets.length > 0 && (
+      {/* Load More */}
+      {!loading && markets.length > 0 && hasMore && (
         <div className="mt-8 text-center">
-          <Button variant="secondary" onClick={fetchMarkets}>
+          <Button variant="secondary" onClick={loadMore}>
             Load More
           </Button>
+        </div>
+      )}
+
+      {/* End of results */}
+      {!loading && markets.length > 0 && !hasMore && (
+        <div className="mt-8 text-center">
+          <p className="text-text-secondary">No more markets to load</p>
         </div>
       )}
     </div>

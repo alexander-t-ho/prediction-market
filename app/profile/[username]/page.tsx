@@ -213,7 +213,7 @@ export default function ProfilePage() {
         {/* Trendsetter Score */}
         <Card variant="elevated" padding="lg">
           <h2 className="text-lg font-semibold text-text-primary mb-4">Trendsetter Score</h2>
-          <TrendsetterScore userId={profile.id} variant="compact" />
+          <TrendsetterScore userId={profile.id} />
         </Card>
 
         {/* Accuracy */}

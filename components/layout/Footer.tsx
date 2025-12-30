@@ -69,18 +69,18 @@ export default function Footer() {
             <h4 className="mb-3 text-sm font-semibold uppercase text-text-primary">About</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/how-it-works" className="footer-link">
-                  How It Works
+                <Link href="/markets" className="footer-link">
+                  Browse Markets
                 </Link>
               </li>
               <li>
-                <Link href="/authentic-opinion" className="footer-link">
-                  Authentic Opinion System
+                <Link href="/leaderboards" className="footer-link">
+                  Leaderboards
                 </Link>
               </li>
               <li>
                 <a
-                  href="https://github.com/yourusername/hottake"
+                  href="https://github.com/alexander-t-ho/prediction-market"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="footer-link"

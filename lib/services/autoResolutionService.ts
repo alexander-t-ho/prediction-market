@@ -63,14 +63,14 @@ export async function findResolutionCandidates(): Promise<AutoResolutionCandidat
       marketType: market.marketType as any,
       movieTitle: market.title,
       releaseDate,
-      imdbId: market.imdbId,
+      imdbId: market.movieId || null,
       daysPostRelease,
       canResolve: false,
       reason: '',
     };
 
     // Check RT markets (14 days minimum)
-    if (market.marketType === 'rt_binary' || market.marketType === 'rt_range') {
+    if (market.category === 'rotten_tomatoes') {
       if (daysPostRelease >= 14) {
         candidate.canResolve = true;
         candidate.reason = `RT market ready (${daysPostRelease} days post-release)`;
@@ -81,9 +81,8 @@ export async function findResolutionCandidates(): Promise<AutoResolutionCandidat
 
     // Check Box Office markets (Monday after opening weekend = 3-4 days)
     if (
-      market.marketType === 'box_office_binary' ||
-      market.marketType === 'box_office_range' ||
-      market.marketType === 'box_office_number_one'
+      market.category === 'box_office' ||
+      market.category === 'box_office_ranking'
     ) {
       // Opening weekend is Friday-Sunday, so Monday = 3 days post-release
       if (daysPostRelease >= 3) {
@@ -128,8 +127,8 @@ export async function autoResolveRTMarket(
 
     // Fetch RT score
     let rtScore;
-    if (market.imdbId) {
-      rtScore = await omdbService.getRottenTomatoesScore(market.imdbId);
+    if (market.movieId) {
+      rtScore = await omdbService.getRottenTomatoesScore(market.movieId);
     } else {
       const year = market.releaseDate ? new Date(market.releaseDate).getFullYear() : undefined;
       rtScore = await omdbService.getRottenTomatoesScoreByTitle(market.title, year);
@@ -276,19 +275,19 @@ export async function autoResolveBoxOfficeMarket(
     let winningOutcome;
     let actualValue = boxOfficeData.openingWeekendGross;
 
-    if (market.marketType === 'box_office_number_one') {
+    if (market.category === 'box_office_ranking') {
       // #1 Opening Weekend market
       winningOutcome = boxOfficeData.rank === 1
         ? market.outcomes.find(o => o.label.toLowerCase().includes('yes'))
         : market.outcomes.find(o => o.label.toLowerCase().includes('no'));
       actualValue = boxOfficeData.rank;
-    } else if (market.marketType === 'box_office_binary') {
+    } else if (market.category === 'box_office' && market.marketType === 'binary') {
       // Binary threshold market
       const threshold = market.threshold ? Number(market.threshold) : 0;
       winningOutcome = boxOfficeData.openingWeekendGross >= threshold
         ? market.outcomes.find(o => o.label.toLowerCase().includes('yes'))
         : market.outcomes.find(o => o.label.toLowerCase().includes('no'));
-    } else if (market.marketType === 'box_office_range') {
+    } else if (market.category === 'box_office' && market.marketType === 'range_bracket') {
       // Range bracket market
       winningOutcome = determineBoxOfficeBracket(
         boxOfficeData.openingWeekendGross,

@@ -216,7 +216,7 @@ export function NotificationBell() {
                   return (
                     <Wrapper
                       key={notification.id}
-                      href={link !== '#' ? link : undefined}
+                      href={(link !== '#' ? link : '#') as any}
                       onClick={() => {
                         if (!notification.isRead) {
                           handleMarkAsRead(notification.id);
