@@ -10,7 +10,17 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Add authorization check (cron secret key)
+    // Verify cron secret (Vercel automatically adds this header for cron jobs)
+    const authHeader = request.headers.get('authorization');
+    const cronSecret = process.env.CRON_SECRET;
+
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      console.error('Unauthorized cron request');
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     console.log('Starting market generation cron job...');
 

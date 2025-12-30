@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/generate-markets",
+      "schedule": "0 6 * * *"
+    },
+    {
       "path": "/api/cron/auto-resolve",
       "schedule": "0 12 * * *"
     },
