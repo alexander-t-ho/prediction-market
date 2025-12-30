@@ -1,0 +1,1 @@
+ALTER TABLE "markets" ADD COLUMN "movie_poster_path" varchar(255);

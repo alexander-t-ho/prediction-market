@@ -1,0 +1,47 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/auto-resolve",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/generate-markets",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/transition-blind-periods",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/leaderboards/snapshots/generate",
+      "schedule": "0 0 * * 0"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=1, stale-while-revalidate"
+        }
+      ]
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "NEXT_TELEMETRY_DISABLED": "1"
+    }
+  },
+  "functions": {
+    "app/api/**": {
+      "maxDuration": 10
+    },
+    "app/api/cron/**": {
+      "maxDuration": 60
+    }
+  }
+}

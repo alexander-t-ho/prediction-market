@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* HotTake Dark Theme - Kalshi-inspired */
+  --background-primary: #0D1117;
+  --background-secondary: #161B22;
+  --background-elevated: #21262D;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8B949E;
+  --accent-primary: #58A6FF;
+  --positive: #3FB950;
+  --negative: #F85149;
+  --contrarian: #A371F7;
+  --blind-period: #D29922;
+  --border: #30363D;
+}
+
+body {
+  background: var(--background-primary);
+  color: var(--text-primary);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
