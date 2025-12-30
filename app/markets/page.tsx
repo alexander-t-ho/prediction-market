@@ -44,36 +44,62 @@ export default function MarketsPage() {
 
       const data = await response.json();
       console.log('API Response:', data); // Debug log
+      console.log('Number of markets received:', data.markets?.length || 0);
 
       // Check if we have markets data
       if (!data.markets || !Array.isArray(data.markets)) {
+        console.log('No markets data or not an array');
         setMarkets([]);
         return;
       }
 
-      // Fetch stats for each market
+      // Fetch stats for each market in parallel (with error handling)
       const marketsWithStats = await Promise.all(
         data.markets.map(async (market: any) => {
           // Skip if market is undefined or doesn't have an id
           if (!market || !market.id) {
+            console.warn('Skipping market without ID:', market);
             return null;
           }
 
           try {
             const statsResponse = await fetch(
-              `/api/markets/${market.id}${user ? `?userId=${user.id}` : ''}`
+              `/api/markets/${market.id}${user ? `?userId=${user.id}` : ''}`,
+              { signal: AbortSignal.timeout(5000) } // 5 second timeout per market
             );
+
+            if (!statsResponse.ok) {
+              console.error(`Failed to fetch stats for market ${market.id}: ${statsResponse.status}`);
+              // Return basic market data with default stats
+              return {
+                ...market,
+                total_pool: 0,
+                total_bets: 0,
+                outcomes: [],
+                user_bet: null,
+              };
+            }
+
             const statsData = await statsResponse.json();
             return statsData.market;
           } catch (error) {
             console.error(`Error fetching stats for market ${market.id}:`, error);
-            return market; // Return basic market data if stats fetch fails
+            // Return basic market data with default stats
+            return {
+              ...market,
+              total_pool: 0,
+              total_bets: 0,
+              outcomes: [],
+              user_bet: null,
+            };
           }
         })
       );
 
       // Filter out any null values from the results
-      setMarkets(marketsWithStats.filter((market) => market !== null));
+      const validMarkets = marketsWithStats.filter((market) => market !== null);
+      console.log('Valid markets after fetching stats:', validMarkets.length);
+      setMarkets(validMarkets);
     } catch (err: any) {
       setError(err.message);
     } finally {
